@@ -48,6 +48,7 @@ $(document).ready(function(){
                     userId:userInfo.userId,
                 });
                 $('#main-view').html(battleRoomHtml);
+                $.getScript('/js/sendFinishBtn.js');
                 $('#waiting-modal').css('display', 'none');    
                 $('#team-detail-modal').css('display', 'none');    
                 $('.modal-overlay').remove();

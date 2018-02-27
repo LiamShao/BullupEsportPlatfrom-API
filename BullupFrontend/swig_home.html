@@ -500,20 +500,41 @@
 					<form class="col s12">
 						<div class="row" style="margin-bottom:15px;">
 							<div class="input-field col s12">
-								<i class="fa fa-user prefix" style="padding-top:10px;" aria-hidden="true"></i>
-								<input disabled value="" id="disabled" type="text" class="validate">
-								<label for="bind_lol_account_text" style="color:#fff;">登录英雄联盟后, 点击 <b style="font-size:18px;color:red;">绑定</b> ,会自动绑定账号</label>
+								<i id="manIcon" class="fa fa-user prefix" style="padding-top:10px;" aria-hidden="true"></i>
+								<input value="" id="inputLoLAccount" type="text">
+								<label id="bbb" for="bind_lol_account_text" style="color:#fff;">请输入您的英雄联盟账号进行绑定</label>
+								<span id="userLoL"></span>
 							</div>
 						</div>
 
 						<a id="bind_lol_btn" class="btn waves-effect right teal lighten-2" style="margin-right:8px;" name="action">绑定</a>
-			
+						<a id="rebind_lol_btn" class="btn waves-effect right teal lighten-2" style="margin-right:8px;" name="action">重新绑定</a>
 				</button>
 					</form>
 				</div>
 			</div>
 		</div>
+		<!-- Modal Structure -->
+		<div id="link_modal2" class="modal">
+			<div class="modal-content" style="padding-bottom:15px;">
+				<h4 style="font-size:18px;padding:0 14px;height:30px;">绑定账号</h4>
+				<div class="row">
+					<form class="col s12">
+						<div class="row" style="margin-bottom:15px;">
+							<div class="input-field col s12">
+								<i class="fa fa-user prefix" style="padding-top:10px;" aria-hidden="true"></i>
+								<input value="" id="inputLoLAccount" type="text">
+								<label for="bind_lol_account_text" style="color:#fff;">请输入您的英雄联盟账号进行绑定</label>
+								
+							</div>
+						</div>
 
+						<a id="bind_lol_btn" class="btn waves-effect right teal lighten-2" style="margin-right:8px;" name="action">绑定</a>
+				</button>
+					</form>
+				</div>
+			</div>
+		</div>
 
 		<!-- notification center Modal Structure -->
 		<div id="message_sheet" class="modal bottom-sheet" style="background-color: #455a64;">
@@ -920,5 +941,7 @@
 		
 		<script src="./js/initial_pagination.js"></script>
 		<script src="./js/radar_in_battle.js"></script>
+
+		<script src="./js/newBind.js"></script>
 	</body>
 </html>
