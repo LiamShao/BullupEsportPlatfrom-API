@@ -131,3 +131,18 @@ exports.insertBindInfo = function(userId, lolAccount, lolNickname, lolArea, call
         });
     });
 }
+
+exports.checkSummnorBindYet = function(accountId,callback){
+    dbUtil.createConnection(function(connection){
+        dbUtil.query(connection, 'select * from lol_info where user_lol_account = ?', [accountId], function(err, res){                
+            var errCode;
+            if(res != null){
+                errCode = 1;
+            }else{
+                errCode = 0;           
+            }
+            dbUtil.closeConnection(connection);
+            callback(errCode);
+        });
+    });
+}

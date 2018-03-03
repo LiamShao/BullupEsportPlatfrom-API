@@ -1271,3 +1271,13 @@ exports.getChampionChineseNameById = function(championId){
 exports.getChampionEnglishNameById = function(championId){
     return (champions.keys)[championId];
 }
+
+exports.newBindCheck = function(name,callback){
+    getSummonerByName(name, function(summoner){
+        if(summoner.accountId == undefined){
+            callback(null);
+        }else{
+            callback(summoner);
+        }
+    });
+}

@@ -92,6 +92,10 @@ socket.on('feedback', function (feedback) {
         case 'LOLBINDRESULT':
             handleLOLBindResult(feedback);
             break;
+        //API版本的绑定
+        case 'NEWBINDRESULT':
+            handleNewLOLBindResult(feedback);
+            break;
 
         case 'ESTABLISHTEAMRESULT':
             handleTeamEstablishResult(feedback);
@@ -1265,8 +1269,19 @@ function createCompareFunction(propertyName){
     }
 }
 
-function handleLOLBindResult(feedback){
-    //
+// function handleLOLBindResult(feedback){
+//     //
+//     if(feedback.errorCode == 0){
+//         userInfo.lolAccountInfo = feedback.extension;
+//         var score =feedback.extension.oriStrengthScore;
+//         userInfo.strength.score=score;
+//     }
+//     bullup.alert(feedback.extension.tips);
+//     $('.modal').modal('close');
+// }
+
+//API版本的绑定
+function handleNewLOLBindResult(feedback){
     if(feedback.errorCode == 0){
         userInfo.lolAccountInfo = feedback.extension;
         var score =feedback.extension.oriStrengthScore;
@@ -1275,7 +1290,6 @@ function handleLOLBindResult(feedback){
     bullup.alert(feedback.extension.tips);
     $('.modal').modal('close');
 }
-
 //用户修改信息
 function handleUpdateInfoResult(feedback){
     if(feedback.text=='密码修改成功'){

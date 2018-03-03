@@ -11,7 +11,10 @@ $().ready(function () {
             var $account = $('#inputLoLAccount').val();
             if($account.length != 0 && $account.length < 20){
                 alert($account);
-                //socket.emit('bindLOL',{ account: $account });
+                socket.emit('bindLOL',{ 
+                    account: $account,
+                    userId: userInfo.userId
+                });
             }else{
                 bullup.alert('请输入正确的账号');
             }

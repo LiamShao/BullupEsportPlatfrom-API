@@ -16,6 +16,8 @@ var battleRecordDao = dependencyUtil.global.dao.battleRecordDao;
 var rankInfoDao = dependencyUtil.global.dao.rankInfoDao;
 var pubgDao = dependencyUtil.global.dao.pubgDao;
 
+var lolUtil = dependencyUtil.global.utils.lolUtil;
+
 exports.init = function () {
     this.users = {};
 
@@ -595,110 +597,176 @@ exports.handleRankRequest = function (socket){
 }
 
 
-exports.handleLOLBind = function(socket){
-    socket.on('lolLoginResult',function(loginPacketStr){
-        if(loginPacketStr == undefined || loginPacketStr==null){
-            return;
-        }
-        var stdout = JSON.parse(loginPacketStr);
-        var loginPacket = {};
-        var rankTierInfo = String(stdout.UserInfo.rankedTierInfo);
-        var ranks = ['UNRANKED','BRONZE','SILVER','GOLD','PLATINUM','DIAMOND','MASTER','CHALLENGER'];
-        loginPacket.currentRank = 'UNRANKED';
-        for(var index in ranks){
-            if(rankTierInfo.indexOf(ranks[index]) != -1){
-                loginPacket.currentRank = ranks[index];
-                break;
-            }
-        }
-        loginPacket.head = "user";
-        loginPacket.accountId = stdout.UserInfo.userId;
-        loginPacket.nickname = stdout.UserInfo.displayName;
-        loginPacket.lastRank = stdout.UserInfo.lastSeasonRank;
-        loginPacket.serverName = stdout.UserInfo.serverName;
+// exports.handleLOLBind = function(socket){
+//     socket.on('lolLoginResult',function(loginPacketStr){
+//         if(loginPacketStr == undefined || loginPacketStr==null){
+//             return;
+//         }
+//         var stdout = JSON.parse(loginPacketStr);
+//         var loginPacket = {};
+//         var rankTierInfo = String(stdout.UserInfo.rankedTierInfo);
+//         var ranks = ['UNRANKED','BRONZE','SILVER','GOLD','PLATINUM','DIAMOND','MASTER','CHALLENGER'];
+//         loginPacket.currentRank = 'UNRANKED';
+//         for(var index in ranks){
+//             if(rankTierInfo.indexOf(ranks[index]) != -1){
+//                 loginPacket.currentRank = ranks[index];
+//                 break;
+//             }
+//         }
+//         loginPacket.head = "user";
+//         loginPacket.accountId = stdout.UserInfo.userId;
+//         loginPacket.nickname = stdout.UserInfo.displayName;
+//         loginPacket.lastRank = stdout.UserInfo.lastSeasonRank;
+//         loginPacket.serverName = stdout.UserInfo.serverName;
 
 
 
 
-        var userId = socketService.socketUserMap[socket.id];
-        var lolAccount = loginPacket.accountId;
-        var lolNickname = loginPacket.nickname;
-        var lolArea = loginPacket.serverName;
-        var lastRank = loginPacket.lastRank;
-        var currentRank = loginPacket.currentRank;
-        var oriScore = exports.originStrengthScoreCalculation(lastRank, currentRank);
+//         var userId = socketService.socketUserMap[socket.id];
+//         var lolAccount = loginPacket.accountId;
+//         var lolNickname = loginPacket.nickname;
+//         var lolArea = loginPacket.serverName;
+//         var lastRank = loginPacket.lastRank;
+//         var currentRank = loginPacket.currentRank;
+//         var oriScore = exports.originStrengthScoreCalculation(lastRank, currentRank);
 
-        async.waterfall([
-            function(callback){
-                lolInfoDao.validateBindInfo(userId, lolAccount, lolArea, function(bindValidityResult){
-                    //如果该用户在该大区已绑定了账号  或者该大区的账号已被绑定  则拒绝绑定
-                    var feedback = {};
-                    if(bindValidityResult.value != 'true'){
-                        feedback.text = '绑定失败';
-                        feedback.type = 'LOLBINDRESULT';
-                        switch(bindValidityResult.errorCode){
-                            case 1:{
-                                feedback.errorCode = 1;
-                                feedback.extension = {};
-                                feedback.extension.tips = '该英雄联盟账号已被绑定';
-                                break;
+//         async.waterfall([
+//             function(callback){
+//                 lolInfoDao.validateBindInfo(userId, lolAccount, lolArea, function(bindValidityResult){
+//                     //如果该用户在该大区已绑定了账号  或者该大区的账号已被绑定  则拒绝绑定
+//                     var feedback = {};
+//                     if(bindValidityResult.value != 'true'){
+//                         feedback.text = '绑定失败';
+//                         feedback.type = 'LOLBINDRESULT';
+//                         switch(bindValidityResult.errorCode){
+//                             case 1:{
+//                                 feedback.errorCode = 1;
+//                                 feedback.extension = {};
+//                                 feedback.extension.tips = '该英雄联盟账号已被绑定';
+//                                 break;
+//                             }
+//                             case 2:{
+//                                 feedback.errorCode = 2;
+//                                 feedback.extension = {};
+//                                 feedback.extension.tips = '您在该区已经绑定了英雄联盟账号';
+//                                 break;
+//                             }
+//                         }
+//                         callback('error', feedback);
+//                     }else{
+//                         callback(null, null);
+//                     }
+//                 });   
+//             },
+//             function(blankData, callback){
+//                 lolInfoDao.insertBindInfo(userId, lolAccount, lolNickname, lolArea, function(bindResult){
+//                     if(bindResult.errorCode == 0){
+//                         var feedback = {
+//                             errorCode: 0,
+//                             type: 'LOLBINDRESULT',
+//                             text: '绑定成功',
+//                             extension: {
+//                                 tips: '绑定成功',
+//                                 userId: userId,
+//                                 lol_info_id:bindResult.lolInfoId,
+//                                 user_lol_nickname: lolNickname,
+//                                 user_lol_area: lolArea,
+//                                 user_lol_account: lolAccount
+//                             }
+//                         };
+//                         callback(null, feedback);
+//                     }else{
+//                         var feedback = {
+//                             errorCode: 3,
+//                             type: 'LOLBINDRESULT',
+//                             text: '绑定失败',
+//                             extension: {
+//                                 tips: '服务器异常，请稍后再试' 
+//                             }
+//                         }
+//                         callback(null, feedback);
+//                     }
+//                 });
+//             }
+//         ],function(err,feedback){
+//             if(feedback.errorCode == 0){
+//                 //更新用户战力表
+//                 var bindInfo = feedback.extension;
+//                 bindInfo.oriStrengthScore = oriScore;
+//                 strengthInfoDao.updateStrengthInfo(bindInfo, function(result){
+//                     console.log("result" + result);
+//                 });
+//             }
+//             socketService.stableSocketEmit(socket, 'feedback', feedback);
+//         });
+//     });
+// }
+
+exports.handleNewBind = function(socket){
+    socket.on('bindLOL',function(data){
+        lolUtil.newBindCheck(data.account,function(res){
+            if(res != null){
+                lolInfoDao.checkSummnorBindYet(res.accountId,function(res2){
+                    if(res2 == 1){
+                        socketService.stableSocketEmit(socket, 'feedback', {
+                            'errorCode': 1,
+                            'text': '绑定失败，该账户已被绑定',
+                            'type': 'NEWBINDRESULT',
+                            'extension': {
+                                'tips': '绑定失败，该账户已被绑定' 
                             }
-                            case 2:{
-                                feedback.errorCode = 2;
-                                feedback.extension = {};
-                                feedback.extension.tips = '您在该区已经绑定了英雄联盟账号';
-                                break;
-                            }
-                        }
-                        callback('error', feedback);
+                        });
                     }else{
-                        callback(null, null);
+                        lolInfoDao.insertBindInfo(data.userId, res.accountId, data.account, 'null', function(bindResult){
+                            if(bindResult.errorCode == 0){
+                                var feedback = {
+                                    errorCode: 0,
+                                    type: 'NEWBINDRESULT',
+                                    text: '绑定成功',
+                                    extension: {
+                                        tips: '绑定成功',
+                                        userId: data.userId,
+                                        lol_info_id:bindResult.lolInfoId,
+                                        user_lol_nickname: data.account,
+                                        user_lol_area: 'null',
+                                        user_lol_account: res.accountId
+                                    }
+                                };
+                            }else{
+                                var feedback = {
+                                    errorCode: 3,
+                                    type: 'NEWBINDRESULT',
+                                    text: '绑定失败',
+                                    extension: {
+                                        tips: '服务器异常，请稍后再试' 
+                                    }
+                                }
+   
+                            }
+                            var bindInfo = {};
+                            bindInfo.userId = data.userId;
+                            bindInfo.oriStrengthScore = 1200;
+                                strengthInfoDao.updateStrengthInfo(bindInfo, function(result){
+                                    console.log("result" + result);
+                                });
+                            socketService.stableSocketEmit(socket, 'feedback', feedback);
+                        });
                     }
-                });   
-            },
-            function(blankData, callback){
-                lolInfoDao.insertBindInfo(userId, lolAccount, lolNickname, lolArea, function(bindResult){
-                    if(bindResult.errorCode == 0){
-                        var feedback = {
-                            errorCode: 0,
-                            type: 'LOLBINDRESULT',
-                            text: '绑定成功',
-                            extension: {
-                                tips: '绑定成功',
-                                userId: userId,
-                                lol_info_id:bindResult.lolInfoId,
-                                user_lol_nickname: lolNickname,
-                                user_lol_area: lolArea,
-                                user_lol_account: lolAccount
-                            }
-                        };
-                        callback(null, feedback);
-                    }else{
-                        var feedback = {
-                            errorCode: 3,
-                            type: 'LOLBINDRESULT',
-                            text: '绑定失败',
-                            extension: {
-                                tips: '服务器异常，请稍后再试' 
-                            }
-                        }
-                        callback(null, feedback);
+                });
+            }else{
+                socketService.stableSocketEmit(socket, 'feedback', {
+                    'errorCode': 1,
+                    'text': '绑定失败，查询不到该用户',
+                    'type': 'NEWBINDRESULT',
+                    'extension': {
+                        'tips': '绑定失败，查询不到该用户' 
                     }
                 });
             }
-        ],function(err,feedback){
-            if(feedback.errorCode == 0){
-                //更新用户战力表
-                var bindInfo = feedback.extension;
-                bindInfo.oriStrengthScore = oriScore;
-                strengthInfoDao.updateStrengthInfo(bindInfo, function(result){
-                    console.log("result" + result);
-                });
-            }
-            socketService.stableSocketEmit(socket, 'feedback', feedback);
         });
     });
 }
+
 /**个人中心 */
 exports.handlePersonalCenterRequest = function(socket){
     socket.on('pesonalCenterRequest', function(request){
